@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+from typing import Any
 
 from app.extensions import db
 
@@ -8,7 +9,10 @@ class ResearchProject(db.Model):
 
     __tablename__ = "research_projects"
 
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(
+        db.Integer,
+        primary_key=True,
+    )
 
     title = db.Column(
         db.String(200),
@@ -46,15 +50,36 @@ class ResearchProject(db.Model):
         onupdate=lambda: datetime.now(timezone.utc),
     )
 
-    def to_dict(self) -> dict:
-        """Convert the database model into a JSON-serializable dictionary."""
+    sources = db.relationship(
+        "HistoricalSource",
+        backref="project",
+        lazy="selectin",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+    )
 
-        return {
+    def to_dict(
+        self,
+        *,
+        include_sources: bool = False,
+    ) -> dict[str, Any]:
+        """Convert the database model into a JSON dictionary."""
+
+        result: dict[str, Any] = {
             "id": self.id,
             "title": self.title,
             "description": self.description,
             "research_question": self.research_question,
             "status": self.status,
+            "source_count": len(self.sources),
             "created_at": self.created_at.isoformat(),
             "updated_at": self.updated_at.isoformat(),
         }
+
+        if include_sources:
+            result["sources"] = [
+                source.to_dict()
+                for source in self.sources
+            ]
+
+        return result
