@@ -1,5 +1,6 @@
 from flask import Blueprint, jsonify, request
 from sqlalchemy import select
+from sqlalchemy.orm import selectinload
 
 from app.extensions import db
 from app.models import ResearchProject
@@ -21,9 +22,10 @@ VALID_STATUSES = {
 }
 
 
-def validation_error(message: str, status_code: int = 400):
-    """Return a consistently formatted validation response."""
-
+def validation_error(
+    message: str,
+    status_code: int = 400,
+):
     return (
         jsonify(
             {
@@ -35,12 +37,32 @@ def validation_error(message: str, status_code: int = 400):
     )
 
 
+def resource_not_found(message: str):
+    return (
+        jsonify(
+            {
+                "error": "not_found",
+                "message": message,
+            }
+        ),
+        404,
+    )
+
+
 @projects_bp.get("")
 def list_projects():
     """Return all research projects, newest first."""
 
-    statement = select(ResearchProject).order_by(
-        ResearchProject.created_at.desc()
+    statement = (
+        select(ResearchProject)
+        .options(
+            selectinload(
+                ResearchProject.sources
+            )
+        )
+        .order_by(
+            ResearchProject.created_at.desc()
+        )
     )
 
     projects = db.session.execute(
@@ -58,6 +80,40 @@ def list_projects():
     )
 
 
+@projects_bp.get("/<int:project_id>")
+def get_project(project_id: int):
+    """Return one research project with its sources."""
+
+    statement = (
+        select(ResearchProject)
+        .options(
+            selectinload(
+                ResearchProject.sources
+            )
+        )
+        .where(
+            ResearchProject.id == project_id
+        )
+    )
+
+    project = db.session.execute(
+        statement
+    ).scalar_one_or_none()
+
+    if project is None:
+        return resource_not_found(
+            "Research project not found."
+        )
+
+    return jsonify(
+        {
+            "project": project.to_dict(
+                include_sources=True
+            )
+        }
+    )
+
+
 @projects_bp.post("")
 def create_project():
     """Create a new historical research project."""
@@ -69,8 +125,14 @@ def create_project():
             "The request body must contain valid JSON."
         )
 
-    title = str(payload.get("title", "")).strip()
-    description = str(payload.get("description", "")).strip()
+    title = str(
+        payload.get("title", "")
+    ).strip()
+
+    description = str(
+        payload.get("description", "")
+    ).strip()
+
     research_question = str(
         payload.get("research_question", "")
     ).strip()
@@ -95,7 +157,7 @@ def create_project():
         )
 
         return validation_error(
-            f"Invalid project status. "
+            "Invalid project status. "
             f"Allowed values: {allowed_statuses}."
         )
 
