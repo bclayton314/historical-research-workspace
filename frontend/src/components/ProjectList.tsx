@@ -1,12 +1,17 @@
-import type { ResearchProject } from "../types/project";
+import type {
+  ResearchProject,
+} from "../types/project";
+
 import { ProjectCard } from "./ProjectCard";
 
 interface ProjectListProps {
   projects: ResearchProject[];
+  onOpenProject: (projectId: number) => void;
 }
 
 export function ProjectList({
   projects,
+  onOpenProject,
 }: ProjectListProps) {
   if (projects.length === 0) {
     return (
@@ -27,6 +32,7 @@ export function ProjectList({
         <ProjectCard
           key={project.id}
           project={project}
+          onOpen={onOpenProject}
         />
       ))}
     </section>

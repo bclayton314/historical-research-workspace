@@ -5,6 +5,7 @@ import type {
 
 interface ProjectCardProps {
   project: ResearchProject;
+  onOpen: (projectId: number) => void;
 }
 
 const statusLabels: Record<ProjectStatus, string> = {
@@ -16,13 +17,17 @@ const statusLabels: Record<ProjectStatus, string> = {
 };
 
 function formatDate(dateValue: string): string {
-  return new Intl.DateTimeFormat("en-US", {
-    dateStyle: "medium",
-  }).format(new Date(dateValue));
+  return new Intl.DateTimeFormat(
+    "en-US",
+    {
+      dateStyle: "medium",
+    },
+  ).format(new Date(dateValue));
 }
 
 export function ProjectCard({
   project,
+  onOpen,
 }: ProjectCardProps) {
   return (
     <article className="project-card">
@@ -36,7 +41,10 @@ export function ProjectCard({
         </div>
 
         <span
-          className={`status-badge status-badge--${project.status}`}
+          className={
+            `status-badge `
+            + `status-badge--${project.status}`
+          }
         >
           {statusLabels[project.status]}
         </span>
@@ -60,7 +68,26 @@ export function ProjectCard({
       )}
 
       <footer className="project-card__footer">
-        Created {formatDate(project.created_at)}
+        <div>
+          <span>
+            Created {formatDate(project.created_at)}
+          </span>
+
+          <span className="project-source-count">
+            {project.source_count}{" "}
+            {project.source_count === 1
+              ? "source"
+              : "sources"}
+          </span>
+        </div>
+
+        <button
+          type="button"
+          className="open-project-button"
+          onClick={() => onOpen(project.id)}
+        >
+          Open workspace
+        </button>
       </footer>
     </article>
   );
