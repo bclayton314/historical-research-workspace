@@ -58,10 +58,19 @@ class ResearchProject(db.Model):
         passive_deletes=True,
     )
 
+    notes = db.relationship(
+        "ResearchNote",
+        backref="project",
+        lazy="selectin",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+    )
+
     def to_dict(
         self,
         *,
         include_sources: bool = False,
+        include_notes: bool = False,
     ) -> dict[str, Any]:
         """Convert the database model into a JSON dictionary."""
 
@@ -72,6 +81,7 @@ class ResearchProject(db.Model):
             "research_question": self.research_question,
             "status": self.status,
             "source_count": len(self.sources),
+            "note_count": len(self.notes),
             "created_at": self.created_at.isoformat(),
             "updated_at": self.updated_at.isoformat(),
         }
@@ -80,6 +90,12 @@ class ResearchProject(db.Model):
             result["sources"] = [
                 source.to_dict()
                 for source in self.sources
+            ]
+
+        if include_notes:
+            result["notes"] = [
+                note.to_dict()
+                for note in self.notes
             ]
 
         return result
