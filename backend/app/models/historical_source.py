@@ -95,6 +95,13 @@ class HistoricalSource(db.Model):
         onupdate=lambda: datetime.now(timezone.utc),
     )
 
+    notes = db.relationship(
+        "ResearchNote",
+        backref="source",
+        lazy="selectin",
+        passive_deletes=True,
+    )
+
     def to_dict(self) -> dict[str, Any]:
         """Convert the source to a JSON-compatible dictionary."""
 
