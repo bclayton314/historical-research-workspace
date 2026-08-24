@@ -89,7 +89,10 @@ def get_project(project_id: int):
         .options(
             selectinload(
                 ResearchProject.sources
-            )
+            ),
+            selectinload(
+                ResearchProject.notes
+            ),
         )
         .where(
             ResearchProject.id == project_id
@@ -107,9 +110,10 @@ def get_project(project_id: int):
 
     return jsonify(
         {
-            "project": project.to_dict(
-                include_sources=True
-            )
+        "project": project.to_dict(
+            include_sources=True,
+            include_notes=True,
+        )
         }
     )
 
