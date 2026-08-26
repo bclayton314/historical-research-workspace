@@ -2,6 +2,10 @@ import type {
   HistoricalSource,
 } from "./source";
 
+import type {
+  ResearchNote,
+} from "./note";
+
 export type ProjectStatus =
   | "planning"
   | "researching"
@@ -16,6 +20,7 @@ export interface ResearchProject {
   research_question: string;
   status: ProjectStatus;
   source_count: number;
+  note_count: number;
   created_at: string;
   updated_at: string;
 }
@@ -23,6 +28,7 @@ export interface ResearchProject {
 export interface ResearchProjectDetail
   extends ResearchProject {
   sources: HistoricalSource[];
+  notes: ResearchNote[];
 }
 
 export interface CreateProjectPayload {
