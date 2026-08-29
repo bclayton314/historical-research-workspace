@@ -27,6 +27,11 @@ import {
   ProjectList,
 } from "./components/ProjectList";
 
+import {
+  createNote,
+  deleteNote,
+} from "./api/notesApi";
+
 import type {
   CreateProjectPayload,
   ResearchProject,
@@ -36,6 +41,10 @@ import type {
 import type {
   CreateSourcePayload,
 } from "./types/source";
+
+import type {
+  CreateNotePayload,
+} from "./types/note";
 
 import "./App.css";
 
