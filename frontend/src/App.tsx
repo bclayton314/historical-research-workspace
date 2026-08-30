@@ -241,6 +241,49 @@ function App() {
     );
   }
 
+  async function handleCreateNote(
+  payload: CreateNotePayload,
+) {
+  if (selectedProjectId === null) {
+    throw new Error(
+      "No research project is selected.",
+    );
+  }
+
+  const response = await createNote(
+    selectedProjectId,
+    payload,
+  );
+
+  setSelectedProject((currentProject) => {
+    if (!currentProject) {
+      return currentProject;
+    }
+
+    return {
+      ...currentProject,
+      note_count:
+        currentProject.note_count + 1,
+      notes: [
+        response.note,
+        ...currentProject.notes,
+      ],
+    };
+  });
+
+  setProjects((currentProjects) =>
+    currentProjects.map((project) =>
+      project.id === selectedProjectId
+        ? {
+            ...project,
+            note_count:
+              project.note_count + 1,
+          }
+        : project,
+    ),
+  );
+}
+
   if (selectedProjectId !== null) {
     const placeholderProject:
       ResearchProjectDetail = selectedProject ?? {
@@ -251,6 +294,8 @@ function App() {
         status: "planning",
         source_count: 0,
         sources: [],
+        note_count: 0,
+        notes: [],
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       };
